@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette import status
 from starlette.responses import Response
@@ -51,4 +52,6 @@ async def get_records(url: str = None):
 
 @app.on_event("startup")
 async def start():
+    load_dotenv()
+
     await db.database.init()

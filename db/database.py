@@ -1,3 +1,5 @@
+import os
+
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -6,8 +8,8 @@ from db.record import Record
 
 
 async def init():
-    client = AsyncIOMotorClient("mongodb://localhost:27017")
-    await init_beanie(database=client.db_name, document_models=[Item, Record])
+    client = AsyncIOMotorClient(os.environ["MONGO_CONNECTION_STRING"])
+    await init_beanie(database=client.lego, document_models=[Item, Record])
 
 
 async def get_records():
