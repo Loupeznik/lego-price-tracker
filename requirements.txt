@@ -11,3 +11,4 @@ python-dotenv~=1.0.0
 
 selenium~=4.9.1
 uvicorn
+slack_sdk

@@ -13,6 +13,9 @@ import db.database
 from db.item import Item
 from db.record import Record
 
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
+
 
 def get_driver() -> webdriver.Chrome:
     options = webdriver.ChromeOptions()
@@ -25,7 +28,7 @@ def get_driver() -> webdriver.Chrome:
     return webdriver.Chrome(options=options, service=service)
 
 
-async def scrape(item: Item, driver: webdriver.Chrome) -> bool:
+async def scrape(item: Item, driver: webdriver.Chrome) -> Record or bool:
     driver.get(item.url)
 
     try:
@@ -53,7 +56,7 @@ async def scrape(item: Item, driver: webdriver.Chrome) -> bool:
             item.name = name
             await item.save()
 
-        return True
+        return record
     except Exception as e:
         logging.log(logging.ERROR, e)
         return False
@@ -73,7 +76,30 @@ def split_currency_string(currency_string: str) -> tuple[float, str]:
         return 0.00, ""
 
 
+def send_slack_message(message: str, is_lower: bool):
+    slack_token = os.environ["SLACK_OAUTH_TOKEN"]
+
+    client = WebClient(token=slack_token)
+
+    icon = ":chart_with_downwards_trend:" if is_lower else ":chart_with_upwards_trend:"
+
+    try:
+        client.chat_postMessage(
+            channel=os.environ["SLACK_CHANNEL_ID"],
+            text=f"{icon} {message}"
+        )
+    except SlackApiError as e:
+        logging.log(logging.ERROR, f"Got an error: {e.response['error']}")
+
+
 async def run_scraper(driver: webdriver.Chrome):
     items = await db.database.get_items()
     for item in items:
-        await scrape(item, driver)
+        previous_record = await Record.find_one({"url": item.url}, sort=[("date", -1)])
+        result = await scrape(item, driver)
+        if isinstance(result, Record):
+            if previous_record is not None:
+                if previous_record.price != result.price:
+                    send_slack_message(
+                        f"Price of {result.name} changed from {previous_record.price} to {result.price}",
+                        result.price < previous_record.price)
