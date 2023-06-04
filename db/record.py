@@ -9,6 +9,7 @@ class Record(Document):
     name: Indexed(str)
     url: Indexed(str)
     price: float
+    currency: str
     date: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:

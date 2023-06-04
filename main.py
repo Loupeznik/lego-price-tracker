@@ -4,6 +4,7 @@ from starlette import status
 from starlette.responses import Response
 
 import db.database
+import scraper
 from db.item import Item
 
 app = FastAPI(
@@ -48,6 +49,16 @@ async def get_records(url: str = None):
             return Response(status_code=status.HTTP_404_NOT_FOUND)
 
     return data
+
+
+@app.get("/scrape")
+async def scrape():
+    driver = scraper.get_driver()
+    items = await db.database.get_items()
+    for item in items:
+        await scraper.scrape(item, driver)
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.on_event("startup")
