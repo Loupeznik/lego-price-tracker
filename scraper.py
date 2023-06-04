@@ -42,18 +42,28 @@ async def scrape(item: Item, driver: webdriver.Chrome) -> Record or bool:
         return False
 
     try:
+        is_item_updated = False
+
         name = driver.find_element("xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[2]/h1/span").text
         _price = driver.find_element("xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[3]/div/span").text
 
         _price = _price.replace("Price\n", "")
         price, currency = split_currency_string(_price)
+        set_id = get_set_id_from_url(item.url)
 
-        record = Record(name=name, url=item.url, price=price, currency=currency)
+        record = Record(name=name, url=item.url, price=price, currency=currency, set_id=set_id)
 
         await record.create()
 
         if item.name is None:
             item.name = name
+            is_item_updated = True
+
+        if item.set_id is None:
+            item.set_id = set_id
+            is_item_updated = True
+
+        if is_item_updated:
             await item.save()
 
         return record
@@ -74,6 +84,17 @@ def split_currency_string(currency_string: str) -> tuple[float, str]:
         return float(numeric_part.replace(",", ".")), non_numeric_part.strip(" ")
     else:
         return 0.00, ""
+
+
+def get_set_id_from_url(url: str) -> int or None:
+    match = re.search(r'\d+$', url)
+
+    if match:
+        last_part = match.group(0)
+
+        return int(last_part)
+
+    return None
 
 
 def send_slack_message(message: str, is_lower: bool):

@@ -11,12 +11,13 @@ class Record(Document):
     price: float
     currency: str
     date: datetime = Field(default_factory=datetime.utcnow)
+    set_id: Indexed(int)
 
     class Settings:
         name = "records"
         indexes = [
             [
                 ("url", pymongo.TEXT),
-                ("name", pymongo.TEXT),
+                ("name", pymongo.TEXT)
             ],
         ]

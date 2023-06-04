@@ -7,6 +7,7 @@ from beanie import Document, Indexed
 class Item(Document):
     url: Indexed(str, unique=True)
     name: Optional[str]
+    set_id: Optional[int]
 
     class Settings:
         name = "items"
