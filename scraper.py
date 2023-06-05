@@ -121,6 +121,7 @@ async def run_scraper(driver: webdriver.Chrome):
         if isinstance(result, Record):
             if previous_record is not None:
                 if previous_record.price != result.price:
-                    send_slack_message(
-                        f"Price of {result.name} changed from {previous_record.price} to {result.price}",
-                        result.price < previous_record.price)
+                    message = \
+                        f"Price of {result.name} changed from {previous_record.currency}{previous_record.price} " \
+                        f"to {result.currency}{result.price}"
+                    send_slack_message(message, result.price < previous_record.price)
