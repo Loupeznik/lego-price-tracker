@@ -1,5 +1,6 @@
 import os
 
+import pymongo
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -39,5 +40,5 @@ async def delete_item(item_id: str) -> bool:
     return True
 
 
-async def get_record_by_url(url: str):
-    return await Record.find_one({"url": url})
+async def get_records_by_set_id(set_id: int) -> list[Record]:
+    return await Record.find(Record.set_id == set_id).sort("-date").limit(30).to_list()

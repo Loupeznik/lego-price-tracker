@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette import status
@@ -6,6 +8,7 @@ from starlette.responses import Response
 import db.database
 import scraper
 from db.item import Item
+from db.record import Record
 
 app = FastAPI(
     title='Lego Price Tracker API',
@@ -39,14 +42,18 @@ async def delete_item(item_id: str):
     return Response(status_code=status.HTTP_204_NO_CONTENT if result else status.HTTP_404_NOT_FOUND)
 
 
-@app.get("/records/{url}")
-async def get_records(url: str = None):
-    if url is None:
-        data = await db.database.get_records()
-    else:
-        data = await db.database.get_record_by_url(url)
-        if data is None:
-            return Response(status_code=status.HTTP_404_NOT_FOUND)
+@app.get("/records/{set_id}")
+async def get_records_by_set_id(set_id: int = None) -> list[Record] or Response:
+    data = await db.database.get_records_by_set_id(set_id)
+    if data is None:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
+
+    return data
+
+
+@app.get("/records")
+async def get_records() -> list[Record]:
+    data = await db.database.get_records()
 
     return data
 
