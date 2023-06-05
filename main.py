@@ -13,7 +13,7 @@ app = FastAPI(
     version='1.0.0',
     license_info={
         'name': 'MIT',
-        'url': 'https://github.com/Loupeznik/lego-price-checker/blob/master/LICENSE'
+        'url': 'https://github.com/Loupeznik/lego-price-tracker/blob/master/LICENSE'
     }
 )
 
