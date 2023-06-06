@@ -6,7 +6,7 @@
 
 A simple FastAPI application for tracking prices from [lego.com](https://lego.com). Uses MongoDB for storing data and Slack for alerting. Price fetching runs as a cronjob within the container and scrapes the current prices every 12 hours. Scraping can also be invoked manually via the API. Items to be tracked can be added via the API (see OpenAPI spec).
 
-## Prerequisities
+## Prerequisites
 - MongoDB instance
 - Slackbot for alerting
 - Chromedriver (if used without running in Docker)
