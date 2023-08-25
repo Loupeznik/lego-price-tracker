@@ -82,8 +82,8 @@ def split_currency_string(currency_string: str) -> tuple[float, str]:
         non_numeric_part = match.group(2)
 
         return float(numeric_part.replace(",", ".")), non_numeric_part.strip(" ")
-    else:
-        return 0.00, ""
+
+    return 0.00, ""
 
 
 def get_set_id_from_url(url: str) -> int or None:
@@ -119,9 +119,8 @@ async def run_scraper(driver: webdriver.Chrome):
         previous_record = await Record.find_one({"url": item.url}, sort=[("date", -1)])
         result = await scrape(item, driver)
         if isinstance(result, Record):
-            if previous_record is not None:
-                if previous_record.price != result.price:
-                    message = \
-                        f"Price of {result.name} changed from {previous_record.currency}{previous_record.price} " \
-                        f"to {result.currency}{result.price}"
-                    send_slack_message(message, result.price < previous_record.price)
+            if previous_record is not None and previous_record.price != result.price:
+                message = \
+                    f"Price of {result.name} changed from {previous_record.currency}{previous_record.price} " \
+                    f"to {result.currency}{result.price}"
+                send_slack_message(message, result.price < previous_record.price)

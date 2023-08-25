@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette import status
@@ -22,7 +20,7 @@ app = FastAPI(
 
 
 @app.get("/items")
-async def get_items():
+async def get_items() -> list[Item]:
     data = await db.database.get_items()
 
     return data
