@@ -1,3 +1,4 @@
+import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette import status
@@ -8,6 +9,8 @@ import scraper
 from db.item import Item
 from db.record import Record
 
+from infra import sentry
+
 app = FastAPI(
     title='Lego Price Tracker API',
     description='REST API for tracking Lego prices',
@@ -17,7 +20,6 @@ app = FastAPI(
         'url': 'https://github.com/Loupeznik/lego-price-tracker/blob/master/LICENSE'
     }
 )
-
 
 @app.get("/items")
 async def get_items() -> list[Item]:
@@ -70,4 +72,5 @@ async def scrape():
 async def start():
     load_dotenv()
 
+    sentry.add_sentry(bool(os.environ["SENTRY_ENABLED"]), os.environ["SENTRY_DSN"])
     await db.database.init()
