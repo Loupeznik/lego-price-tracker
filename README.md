@@ -28,7 +28,7 @@ SLACK_CHANNEL_ID=<slack_channel_id>
 
 # OPTIONALLY
 SENTRY_ENABLED=true
-SENTRY_DSN=https://652e3a71a2fc682dfcb9bb9d55c7b02b@o1324262.ingest.sentry.io/4505767258423296
+SENTRY_DSN=<your_sentry_dsn>
 ```
 
 After running, go to http://yourserver.com:8000/docs to see the OpenAPI spec.
