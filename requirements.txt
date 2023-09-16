@@ -12,3 +12,6 @@ python-dotenv~=1.0.0
 selenium~=4.9.1
 uvicorn
 slack_sdk
+
+sentry-sdk~=1.29.2
+sentry-sdk[pymongo]
