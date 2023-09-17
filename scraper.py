@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.remote.webelement import WebElement
 
 import db.database
 from db.item import Item
@@ -44,14 +45,19 @@ async def scrape(item: Item, driver: webdriver.Chrome) -> Record or bool:
     try:
         is_item_updated = False
 
-        name = driver.find_element("xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[2]/h1/span").text
-        _price = driver.find_element("xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[3]/div/span").text
+        info_element = driver.find_element(
+            "xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]")
+        name = driver.find_element(
+            "xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[2]/h1/span").text
+        _price = driver.find_element(
+            "xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[3]/div/span").text
 
         _price = _price.replace("Price\n", "")
         price, currency = split_currency_string(_price)
         set_id = get_set_id_from_url(item.url)
 
-        record = Record(name=name, url=item.url, price=price, currency=currency, set_id=set_id)
+        record = Record(name=name, url=item.url, price=price,
+                        currency=currency, set_id=set_id)
 
         await record.create()
 
@@ -61,6 +67,11 @@ async def scrape(item: Item, driver: webdriver.Chrome) -> Record or bool:
 
         if item.set_id is None:
             item.set_id = set_id
+            is_item_updated = True
+
+        if check_retiring_soon(info_element) and item.retiring_soon is not True:
+            item.retiring_soon = True
+            item.retiring_soon_fetch_date = record.date
             is_item_updated = True
 
         if is_item_updated:
@@ -113,6 +124,29 @@ def send_slack_message(message: str, is_lower: bool):
         logging.log(logging.ERROR, f"Got an error: {e.response['error']}")
 
 
+def check_retiring_soon(element: WebElement) -> bool:
+    language_mutations = [
+        "Last Chance",
+        "Poslední šance",
+        "Letzte Chance",
+        "Ostatnia szansa",
+        "Dernière chance",
+        "Posledná šanca",
+        "Ultima occasione",
+        "Última oportunidad",
+    ]
+
+    for last_chance_string in language_mutations:
+        xpath_expression = f".//*[contains(text(), '{last_chance_string}')]"
+
+        matching_elements = element.find_elements(By.XPATH, xpath_expression)
+
+        if matching_elements:
+            return True
+
+    return False
+
+
 async def run_scraper(driver: webdriver.Chrome):
     items = await db.database.get_items()
     for item in items:
@@ -123,4 +157,5 @@ async def run_scraper(driver: webdriver.Chrome):
                 message = \
                     f"Price of {result.name} changed from {previous_record.currency}{previous_record.price} " \
                     f"to {result.currency}{result.price}"
-                send_slack_message(message, result.price < previous_record.price)
+                send_slack_message(message, result.price <
+                                   previous_record.price)
