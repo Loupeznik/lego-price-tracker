@@ -17,32 +17,35 @@ app = FastAPI(
     version='1.0.0',
     license_info={
         'name': 'MIT',
-        'url': 'https://github.com/Loupeznik/lego-price-tracker/blob/master/LICENSE'
-    }
+        'url': 'https://github.com/Loupeznik/lego-price-tracker/blob/master/LICENSE',
+    },
+
 )
 
-@app.get("/items")
+
+@app.get("/items", tags=["items"])
 async def get_items() -> list[Item]:
     data = await db.database.get_items()
 
     return data
 
 
-@app.post("/items")
+@app.post("/items", status_code=status.HTTP_201_CREATED, tags=["items"], responses={201: {"description": "Item created"}})
 async def add_item(item: Item):
     await db.database.add_item(item)
 
     return Response(status_code=status.HTTP_201_CREATED)
 
 
-@app.delete("/items/{id}")
+@app.delete("/items/{id}", tags=["items"], status_code=status.HTTP_204_NO_CONTENT,
+            responses={204: {"description": "Item deleted"}, 404: {"description": "Item not found"}})
 async def delete_item(item_id: str):
     result = await db.database.delete_item(item_id)
 
     return Response(status_code=status.HTTP_204_NO_CONTENT if result else status.HTTP_404_NOT_FOUND)
 
 
-@app.get("/records/{set_id}")
+@app.get("/records/{set_id}", tags=["records"], status_code=status.HTTP_200_OK, responses={404: {"description": "Set not found"}})
 async def get_records_by_set_id(set_id: int = None) -> list[Record] or Response:
     data = await db.database.get_records_by_set_id(set_id)
     if data is None:
@@ -51,14 +54,14 @@ async def get_records_by_set_id(set_id: int = None) -> list[Record] or Response:
     return data
 
 
-@app.get("/records")
+@app.get("/records", tags=["records"])
 async def get_records() -> list[Record]:
     data = await db.database.get_records()
 
     return data
 
 
-@app.get("/scrape")
+@app.get("/scrape", status_code=status.HTTP_204_NO_CONTENT, tags=["scrape"])
 async def scrape():
     driver = scraper.get_driver()
     items = await db.database.get_items()
@@ -72,5 +75,6 @@ async def scrape():
 async def start():
     load_dotenv()
 
-    sentry.add_sentry(bool(os.environ["SENTRY_ENABLED"]), os.environ["SENTRY_DSN"])
+    sentry.add_sentry(
+        bool(os.environ["SENTRY_ENABLED"]), os.environ["SENTRY_DSN"])
     await db.database.init()
