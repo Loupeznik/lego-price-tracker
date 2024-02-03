@@ -48,9 +48,9 @@ async def scrape(item: Item, driver: webdriver.Chrome) -> Record or bool:
         info_element = driver.find_element(
             "xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]")
         name = driver.find_element(
-            "xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[2]/h1/span").text
-        _price = driver.find_element(
-            "xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[3]/div/span").text
+            "xpath", "/html/body/div[1]/div/main/div/div[1]/div/div[2]/div[2]/div[1]/h1/span").text
+        _price = WebDriverWait(driver, 20).until(ec.visibility_of_element_located(
+            (By.CSS_SELECTOR, "span[data-test='product-price']"))).text
 
         _price = _price.replace("Price\n", "")
         price, currency = split_currency_string(_price)
