@@ -15,3 +15,4 @@ slack_sdk
 
 sentry-sdk~=1.29.2
 sentry-sdk[pymongo]
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
