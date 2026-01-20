@@ -13,5 +13,5 @@ selenium~=4.9.1
 uvicorn
 slack_sdk
 
-sentry-sdk~=1.29.2
+sentry-sdk~=2.8.0
 sentry-sdk[pymongo]
