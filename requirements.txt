@@ -15,3 +15,4 @@ slack_sdk
 
 sentry-sdk~=1.29.2
 sentry-sdk[pymongo]
+urllib3>=2.2.2 # not directly required, pinned by Snyk to avoid a vulnerability
